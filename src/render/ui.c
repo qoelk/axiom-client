@@ -152,17 +152,20 @@ void ui_draw_main_panel(const SimulationState *sim, const Camera2D_RTS *camera,
 
   // Calculate layout with proper spacing
   int panel_inner_height = config.panel_height - 20; // 10px top/bottom margin
-  int minimap_x = screen_width - config.minimap_size - 10;
+
+  // Mini-map on left edge
+  int minimap_x = 10;
   int minimap_y = screen_height - config.panel_height + 10;
 
-  // Status panel
-  ui_draw_status_panel(10, screen_height - config.panel_height + 10,
+  // Status panel (moved right to make space for minimap)
+  int status_panel_x = minimap_x + config.minimap_size + 10;
+  ui_draw_status_panel(status_panel_x, screen_height - config.panel_height + 10,
                        config.status_panel_width, panel_inner_height, sim,
                        camera, current_tick, max_tick, paused);
 
   // Tick controls panel
-  int tick_panel_x = config.status_panel_width + 20;
-  int tick_panel_width = minimap_x - tick_panel_x - 10;
+  int tick_panel_x = status_panel_x + config.status_panel_width + 10;
+  int tick_panel_width = screen_width - tick_panel_x - 10;
 
   if (tick_panel_width > 200) { // Only draw if there's reasonable space
     DrawRectangle(tick_panel_x, screen_height - config.panel_height + 10,
@@ -175,12 +178,6 @@ void ui_draw_main_panel(const SimulationState *sim, const Camera2D_RTS *camera,
         tick_panel_width, panel_inner_height, current_tick, max_tick, paused);
   }
 
-  // Mini-map (always draw, but might be smaller if space is tight)
-  int actual_minimap_size = config.minimap_size;
-  if (minimap_x < tick_panel_x + 150) { // If overlapping, reduce minimap
-    actual_minimap_size =
-        max(UI_MIN_MINIMAP_SIZE, screen_width - minimap_x - 20);
-  }
-
-  ui_draw_minimap(sim, camera, minimap_x, minimap_y, actual_minimap_size);
+  // Draw minimap (always on left edge)
+  ui_draw_minimap(sim, camera, minimap_x, minimap_y, config.minimap_size);
 }
