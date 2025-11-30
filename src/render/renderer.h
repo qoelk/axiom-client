@@ -21,8 +21,7 @@ void renderer_init_tile_atlas(const char *texture_path, int tile_width,
 void renderer_cleanup_tile_atlas(void);
 
 Color renderer_get_tile_color(TileType tile);
-void renderer_draw_tile(Vector2 screen_pos, float size, Color color,
-                        bool draw_grid);
+void renderer_draw_tile(Vector2 screen_pos, float size, Color color);
 bool renderer_is_position_visible(Vector2 screen_pos, float radius);
 void renderer_calculate_visible_tile_range(const Camera2D_RTS *camera,
                                            const TileMap *map, int *start_x,

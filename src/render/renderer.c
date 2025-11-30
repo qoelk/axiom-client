@@ -4,11 +4,6 @@
 #include <math.h>
 #include <stddef.h>
 
-// Internal constants
-static const float GRID_VISIBILITY_THRESHOLD = 0.5f;
-static const float GRID_ALPHA = 0.3f;
-
-// Global tile atlas
 TileAtlas g_tile_atlas = {0};
 
 // Tile type to atlas coordinates mapping (multiple variations per tile type)
@@ -74,15 +69,9 @@ Color renderer_get_tile_color(TileType tile) {
   }
 }
 
-void renderer_draw_tile(Vector2 screen_pos, float size, Color color,
-                        bool draw_grid) {
+void renderer_draw_tile(Vector2 screen_pos, float size, Color color) {
   DrawRectangle(screen_pos.x - size / 2, screen_pos.y - size / 2, size, size,
                 color);
-
-  if (draw_grid) {
-    DrawRectangleLines(screen_pos.x - size / 2, screen_pos.y - size / 2, size,
-                       size, Fade(BLACK, GRID_ALPHA));
-  }
 }
 
 bool renderer_is_position_visible(Vector2 screen_pos, float radius) {
@@ -150,10 +139,9 @@ void renderer_draw_map(const TileMap *map, const Camera2D_RTS *camera) {
       Vector2 screen_pos =
           camera_world_to_screen(camera, (Vector2){x + 0.5f, y + 0.5f});
       float tile_size = TILE_SIZE_PIXELS * camera->zoom;
-      bool draw_grid = (camera->zoom > GRID_VISIBILITY_THRESHOLD);
 
       if (renderer_is_position_visible(screen_pos, tile_size / 2)) {
-        renderer_draw_tile(screen_pos, tile_size, color, draw_grid);
+        renderer_draw_tile(screen_pos, tile_size, color);
       }
     }
   }
@@ -180,7 +168,6 @@ void renderer_draw_map_textured(const TileMap *map,
       Vector2 screen_pos =
           camera_world_to_screen(camera, (Vector2){x + 0.5f, y + 0.5f});
       float tile_size = TILE_SIZE_PIXELS * camera->zoom;
-      bool draw_grid = (camera->zoom > GRID_VISIBILITY_THRESHOLD);
 
       if (renderer_is_position_visible(screen_pos, tile_size / 2)) {
         // Draw the texture
@@ -189,12 +176,6 @@ void renderer_draw_map_textured(const TileMap *map,
                                tile_size};
         DrawTexturePro(g_tile_atlas.texture, source_rect, dest_rect,
                        (Vector2){0, 0}, 0.0f, WHITE);
-
-        // Draw grid if needed
-        if (draw_grid) {
-          DrawRectangleLines(dest_rect.x, dest_rect.y, dest_rect.width,
-                             dest_rect.height, Fade(BLACK, GRID_ALPHA));
-        }
       }
     }
   }
