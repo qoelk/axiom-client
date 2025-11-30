@@ -52,6 +52,7 @@ int game_window_run(SimulationState *sim) {
   SetTargetFPS(default_config.target_fps);
   renderer_init_tile_atlas("../assets/tiles.png", 16, 16, 1);
   renderer_init_unit_texture("../assets/unit.png");
+  renderer_init_tree_texture("../assets/tree.png");
 
   if (!IsWindowReady()) {
     TraceLog(LOG_ERROR, "GameWindow: Failed to initialize window");
@@ -86,6 +87,7 @@ int game_window_run(SimulationState *sim) {
   CloseWindow();
   renderer_cleanup_tile_atlas();
   renderer_cleanup_unit_texture();
+  renderer_cleanup_tree_texture();
 
   TraceLog(LOG_INFO, "GameWindow: Shutdown complete");
   return 0;

@@ -6,6 +6,7 @@
 
 TileAtlas g_tile_atlas = {0};
 Texture2D g_unit_texture = {0};
+Texture2D g_tree_texture = {0};
 
 // Tile type to atlas coordinates mapping (multiple variations per tile type)
 typedef struct {
@@ -56,6 +57,13 @@ void renderer_init_unit_texture(const char *texture_path) {
   g_unit_texture = LoadTexture(texture_path);
 }
 
+void renderer_init_tree_texture(const char *texture_path) {
+  if (g_tree_texture.id > 0) {
+    UnloadTexture(g_tree_texture);
+  }
+  g_tree_texture = LoadTexture(texture_path);
+}
+
 void renderer_cleanup_tile_atlas(void) {
   if (g_tile_atlas.texture.id > 0) {
     UnloadTexture(g_tile_atlas.texture);
@@ -67,6 +75,13 @@ void renderer_cleanup_unit_texture(void) {
   if (g_unit_texture.id > 0) {
     UnloadTexture(g_unit_texture);
     g_unit_texture.id = 0;
+  }
+}
+
+void renderer_cleanup_tree_texture(void) {
+  if (g_tree_texture.id > 0) {
+    UnloadTexture(g_tree_texture);
+    g_tree_texture.id = 0;
   }
 }
 
@@ -200,16 +215,55 @@ void renderer_draw_map_textured(const TileMap *map,
 
 void renderer_draw_objects(const Object *objects, int count,
                            const Camera2D_RTS *camera) {
+  // Check if tree texture is loaded
+  if (g_tree_texture.id == 0) {
+    // Fall back to colored circles
+    for (int i = 0; i < count; i++) {
+      Object obj = objects[i];
+      Vector2 screen_pos =
+          camera_world_to_screen(camera, (Vector2){obj.x, obj.y});
+      float radius = obj.size * TILE_SIZE_PIXELS * camera->zoom / 2.0f;
+
+      if (renderer_is_position_visible(screen_pos, radius)) {
+        DrawCircle(screen_pos.x, screen_pos.y, radius, PURPLE);
+        DrawCircleLines(screen_pos.x, screen_pos.y, radius, DARKPURPLE);
+      }
+    }
+    return;
+  }
+
+  // Use texture for objects (trees)
   for (int i = 0; i < count; i++) {
     Object obj = objects[i];
     Vector2 screen_pos =
         camera_world_to_screen(camera, (Vector2){obj.x, obj.y});
-    float radius = obj.size * TILE_SIZE_PIXELS * camera->zoom / 2.0f;
+    float obj_size = obj.size * TILE_SIZE_PIXELS * camera->zoom;
 
-    if (renderer_is_position_visible(screen_pos, radius)) {
-      DrawCircle(screen_pos.x, screen_pos.y, radius, PURPLE);
-      DrawCircleLines(screen_pos.x, screen_pos.y, radius, DARKPURPLE);
-    }
+    if (!renderer_is_position_visible(screen_pos, obj_size / 2))
+      continue;
+
+    // Calculate destination rectangle
+    // Trees might be taller than wide, so we can adjust proportions if needed
+    float width = obj_size;
+    float height =
+        obj_size * ((float)g_tree_texture.height / g_tree_texture.width);
+
+    Rectangle dest_rect = {screen_pos.x - width / 2,
+                           screen_pos.y -
+                               height / 2, // Center vertically on position
+                           width, height};
+
+    // Draw the tree texture
+    DrawTexturePro(
+        g_tree_texture,
+        (Rectangle){0, 0, g_tree_texture.width, g_tree_texture.height},
+        dest_rect, (Vector2){0, 0}, // No rotation needed for trees
+        0.0f,
+        WHITE); // Use original tree colors
+
+    // Optional: Draw a subtle shadow or base circle
+    // DrawCircle(screen_pos.x, screen_pos.y + height * 0.4f, width * 0.3f,
+    // (Color){0, 0, 0, 128});
   }
 }
 

@@ -22,6 +22,8 @@ void renderer_init_unit_texture(const char *texture_path);
 void renderer_cleanup_unit_texture(void);
 void renderer_cleanup_tile_atlas(void);
 
+void renderer_init_tree_texture(const char *texture_path);
+void renderer_cleanup_tree_texture(void);
 Color renderer_get_tile_color(TileType tile);
 void renderer_draw_tile(Vector2 screen_pos, float size, Color color);
 bool renderer_is_position_visible(Vector2 screen_pos, float radius);
