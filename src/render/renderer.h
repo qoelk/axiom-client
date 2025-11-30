@@ -18,6 +18,8 @@ typedef struct {
 // Function prototypes
 void renderer_init_tile_atlas(const char *texture_path, int tile_width,
                               int tile_height, int gap);
+void renderer_init_unit_texture(const char *texture_path);
+void renderer_cleanup_unit_texture(void);
 void renderer_cleanup_tile_atlas(void);
 
 Color renderer_get_tile_color(TileType tile);

@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 TileAtlas g_tile_atlas = {0};
+Texture2D g_unit_texture = {0};
 
 // Tile type to atlas coordinates mapping (multiple variations per tile type)
 typedef struct {
@@ -34,6 +35,7 @@ static TileMapping TILE_MAPPINGS[] = {
         .variation_count = 2,
         .atlas_coords = {{5, 3}, {5, 4}} // Rock variations - NEEDS UPDATE
     }};
+
 void renderer_init_tile_atlas(const char *texture_path, int tile_width,
                               int tile_height, int gap) {
   g_tile_atlas.texture = LoadTexture(texture_path);
@@ -47,10 +49,24 @@ void renderer_init_tile_atlas(const char *texture_path, int tile_width,
   g_tile_atlas.rows = (g_tile_atlas.texture.height + gap) / (tile_height + gap);
 }
 
+void renderer_init_unit_texture(const char *texture_path) {
+  if (g_unit_texture.id > 0) {
+    UnloadTexture(g_unit_texture);
+  }
+  g_unit_texture = LoadTexture(texture_path);
+}
+
 void renderer_cleanup_tile_atlas(void) {
   if (g_tile_atlas.texture.id > 0) {
     UnloadTexture(g_tile_atlas.texture);
     g_tile_atlas.texture.id = 0;
+  }
+}
+
+void renderer_cleanup_unit_texture(void) {
+  if (g_unit_texture.id > 0) {
+    UnloadTexture(g_unit_texture);
+    g_unit_texture.id = 0;
   }
 }
 
@@ -126,6 +142,7 @@ Rectangle renderer_get_tile_source_rect(TileType tile_type, int x, int y,
   return (Rectangle){0, 3 * (g_tile_atlas.tile_height + g_tile_atlas.gap),
                      g_tile_atlas.tile_width, g_tile_atlas.tile_height};
 }
+
 void renderer_draw_map(const TileMap *map, const Camera2D_RTS *camera) {
   int start_x, start_y, end_x, end_y;
   renderer_calculate_visible_tile_range(camera, map, &start_x, &start_y, &end_x,
@@ -198,22 +215,55 @@ void renderer_draw_objects(const Object *objects, int count,
 
 void renderer_draw_units(const Unit *units, int count,
                          const Camera2D_RTS *camera) {
+  // Check if unit texture is loaded
+  if (g_unit_texture.id == 0) {
+    // Fall back to colored circles
+    for (int i = 0; i < count; i++) {
+      Unit unit = units[i];
+      Vector2 screen_pos =
+          camera_world_to_screen(camera, (Vector2){unit.x, unit.y});
+      float radius = unit.size * TILE_SIZE_PIXELS * camera->zoom / 2.0f;
+
+      if (!renderer_is_position_visible(screen_pos, radius))
+        continue;
+
+      Color unit_color = (unit.owner == 1) ? RED : YELLOW;
+      DrawCircle(screen_pos.x, screen_pos.y, radius, unit_color);
+      DrawCircleLines(screen_pos.x, screen_pos.y, radius, BLACK);
+
+      // Draw facing direction indicator
+      float end_x = screen_pos.x + cos(unit.facing * DEG2RAD) * radius * 1.5f;
+      float end_y = screen_pos.y + sin(unit.facing * DEG2RAD) * radius * 1.5f;
+      DrawLine(screen_pos.x, screen_pos.y, end_x, end_y, BLACK);
+    }
+    return;
+  }
+
+  // Use texture for units
   for (int i = 0; i < count; i++) {
     Unit unit = units[i];
     Vector2 screen_pos =
         camera_world_to_screen(camera, (Vector2){unit.x, unit.y});
-    float radius = unit.size * TILE_SIZE_PIXELS * camera->zoom / 2.0f;
+    float unit_size = unit.size * TILE_SIZE_PIXELS * camera->zoom;
 
-    if (!renderer_is_position_visible(screen_pos, radius))
+    if (!renderer_is_position_visible(screen_pos, unit_size / 2))
       continue;
 
-    Color unit_color = (unit.owner == 1) ? RED : YELLOW;
-    DrawCircle(screen_pos.x, screen_pos.y, radius, unit_color);
-    DrawCircleLines(screen_pos.x, screen_pos.y, radius, BLACK);
+    // Calculate destination rectangle
+    Rectangle dest_rect = {screen_pos.x - unit_size / 2,
+                           screen_pos.y - unit_size / 2, unit_size, unit_size};
 
-    // Draw facing direction indicator
-    float end_x = screen_pos.x + cos(unit.facing * DEG2RAD) * radius * 1.5f;
-    float end_y = screen_pos.y + sin(unit.facing * DEG2RAD) * radius * 1.5f;
-    DrawLine(screen_pos.x, screen_pos.y, end_x, end_y, BLACK);
+    // Set color based on owner (tint the texture)
+    Color tint = (unit.owner == 1) ? RED : YELLOW;
+
+    // Rotate based on facing direction
+    float rotation = unit.facing;
+
+    // Draw the unit texture
+    DrawTexturePro(
+        g_unit_texture,
+        (Rectangle){0, 0, g_unit_texture.width, g_unit_texture.height},
+        dest_rect, (Vector2){unit_size / 2, unit_size / 2}, // rotation center
+        rotation, tint);
   }
 }

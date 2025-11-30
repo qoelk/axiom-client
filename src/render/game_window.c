@@ -1,5 +1,6 @@
 #include "game_window.h"
 #include "raylib.h"
+#include "renderer.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -50,6 +51,7 @@ int game_window_run(SimulationState *sim) {
 
   SetTargetFPS(default_config.target_fps);
   renderer_init_tile_atlas("../assets/tiles.png", 16, 16, 1);
+  renderer_init_unit_texture("../assets/unit.png");
 
   if (!IsWindowReady()) {
     TraceLog(LOG_ERROR, "GameWindow: Failed to initialize window");
@@ -83,6 +85,7 @@ int game_window_run(SimulationState *sim) {
 
   CloseWindow();
   renderer_cleanup_tile_atlas();
+  renderer_cleanup_unit_texture();
 
   TraceLog(LOG_INFO, "GameWindow: Shutdown complete");
   return 0;
