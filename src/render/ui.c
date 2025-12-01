@@ -82,13 +82,30 @@ void ui_draw_minimap(const SimulationState *sim, const Camera2D_RTS *camera,
     DrawCircle(pixel_x, pixel_y, max(1, (int)(2 * scale_x)), PURPLE);
   }
 
-  // Draw units on mini-map (colored by owner)
+  // Draw units on mini-map (colored by owner, proportional rectangles)
   for (int i = 0; i < sim->unitCount; i++) {
     Unit unit = sim->units[i];
-    int pixel_x = x + (int)(unit.x * scale_x);
-    int pixel_y = y + (int)(unit.y * scale_y);
+
+    // Calculate unit position and size in minimap pixels
+    int unit_x = x + (int)(unit.x * scale_x);
+    int unit_y = y + (int)(unit.y * scale_y);
+
+    // Use unit's actual size scaled down for the minimap
+    int unit_width = max(1, (int)(unit.size * scale_x));
+    int unit_height = max(1, (int)(unit.size * scale_y));
+
+    // Adjust position so unit is centered at its actual position
+    unit_x -= unit_width / 2;
+    unit_y -= unit_height / 2;
+
     Color unit_color = (unit.owner == 1) ? RED : YELLOW;
-    DrawCircle(pixel_x, pixel_y, max(1, (int)(2 * scale_x)), unit_color);
+
+    // Draw filled rectangle for the unit
+    DrawRectangle(unit_x, unit_y, unit_width, unit_height, unit_color);
+
+    // Optional: Add a border to make units more visible
+    DrawRectangleLines(unit_x, unit_y, unit_width, unit_height,
+                       (Color){0, 0, 0, 255});
   }
 
   // Draw viewport rectangle
@@ -113,7 +130,6 @@ void ui_draw_minimap(const SimulationState *sim, const Camera2D_RTS *camera,
     DrawRectangleLines(x, y, size, size, WHITE);
   }
 }
-
 void ui_draw_tick_controls(int x, int y, int width, int height,
                            int current_tick, int max_tick, bool paused) {}
 
