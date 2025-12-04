@@ -3,12 +3,12 @@
 
 #include <stdbool.h>
 
-typedef enum { TILE_WATER, TILE_LAND, TILE_DIRT, TILE_ROCK } TileType;
+typedef enum { TILE_WATER, TILE_LAND, TILE_DIRT, TILE_ROCK } RawTileType;
 
 typedef struct {
   int width;
   int height;
-  TileType *tiles;
+  RawTileType *tiles;
 } RawTileMap;
 
 typedef struct {

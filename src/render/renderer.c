@@ -10,7 +10,7 @@ Texture2D g_tree_texture = {0};
 
 // Tile type to atlas coordinates mapping (multiple variations per tile type)
 typedef struct {
-  TileType tile_type;
+  RawTileType tile_type;
   int variation_count;
   int atlas_coords[8][2]; // [x,y] pairs for up to 8 variations per tile type
 } TileMapping;
@@ -85,7 +85,7 @@ void renderer_cleanup_tree_texture(void) {
   }
 }
 
-Color renderer_get_tile_color(TileType tile) {
+Color renderer_get_tile_color(RawTileType tile) {
   switch (tile) {
   case TILE_WATER:
     return BLUE;
@@ -125,7 +125,7 @@ void renderer_calculate_visible_tile_range(const Camera2D_RTS *camera,
                      ceil(camera->viewport.y + camera->viewport.height));
 }
 
-Rectangle renderer_get_tile_source_rect(TileType tile_type, int x, int y,
+Rectangle renderer_get_tile_source_rect(RawTileType tile_type, int x, int y,
                                         const RawTileMap *map) {
   // Find the mapping for this tile type
   for (size_t i = 0; i < sizeof(TILE_MAPPINGS) / sizeof(TILE_MAPPINGS[0]);
@@ -165,7 +165,7 @@ void renderer_draw_map(const RawTileMap *map, const Camera2D_RTS *camera) {
 
   for (int y = start_y; y < end_y; y++) {
     for (int x = start_x; x < end_x; x++) {
-      TileType tile = map->tiles[y * map->width + x];
+      RawTileType tile = map->tiles[y * map->width + x];
       Color color = renderer_get_tile_color(tile);
 
       Vector2 screen_pos =
@@ -194,7 +194,7 @@ void renderer_draw_map_textured(const RawTileMap *map,
 
   for (int y = start_y; y < end_y; y++) {
     for (int x = start_x; x < end_x; x++) {
-      TileType tile = map->tiles[y * map->width + x];
+      RawTileType tile = map->tiles[y * map->width + x];
       Rectangle source_rect = renderer_get_tile_source_rect(tile, x, y, map);
 
       Vector2 screen_pos =
