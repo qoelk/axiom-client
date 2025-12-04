@@ -9,7 +9,7 @@ typedef struct {
   int width;
   int height;
   TileType *tiles;
-} TileMap;
+} RawTileMap;
 
 typedef struct {
   float x;
@@ -27,7 +27,7 @@ typedef struct {
 } Unit;
 
 typedef struct {
-  TileMap map;
+  RawTileMap map;
   Object *objects;
   int objectCount;
   Unit *units;
@@ -42,8 +42,8 @@ SimulationState *LoadStateFromFile(const char *filename);
 SimulationState *LoadStateAtTick(const char *filename,
                                  int tick); // New: Load specific tick
 void FreeState(SimulationState *state);
-void FreeMap(TileMap *map);
-TileMap *LoadMap(void);
+void FreeMap(RawTileMap *map);
+RawTileMap *LoadMap(void);
 
 // Tick management
 int GetMaxTickFromFile(const char *filename); // New: Get total ticks available

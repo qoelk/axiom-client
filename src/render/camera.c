@@ -9,7 +9,7 @@ static const float EDGE_SCROLL_THRESHOLD = 20.0f;
 static const float CAMERA_SMOOTHING_FACTOR = 0.1f;
 
 void camera_init(Camera2D_RTS *camera, const CameraConfig *config,
-                 const TileMap *map) {
+                 const RawTileMap *map) {
   camera->position = (Vector2){0, 0};
   camera->target = camera->position;
   camera->zoom = 1.0f;
@@ -89,7 +89,7 @@ void camera_handle_edge_scrolling(Camera2D_RTS *camera) {
     camera->target.y += effective_speed;
 }
 
-void camera_update(Camera2D_RTS *camera, const TileMap *map) {
+void camera_update(Camera2D_RTS *camera, const RawTileMap *map) {
   camera_handle_zoom_input(camera);
   camera_handle_keyboard_input(camera);
   camera_handle_edge_scrolling(camera);
@@ -137,7 +137,7 @@ Vector2 camera_screen_to_world(const Camera2D_RTS *camera, Vector2 screen_pos) {
                        TILE_SIZE_PIXELS};
 }
 
-void camera_constrain_to_map(Camera2D_RTS *camera, const TileMap *map) {
+void camera_constrain_to_map(Camera2D_RTS *camera, const RawTileMap *map) {
   int screen_width = GetScreenWidth();
   int screen_height = GetScreenHeight();
 

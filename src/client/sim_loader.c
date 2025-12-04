@@ -5,7 +5,7 @@
 #include <string.h>
 
 // Helper function to parse TileMap from JSON
-TileMap *ParseMapFromJSON(cJSON *mapJson) {
+RawTileMap *ParseMapFromJSON(cJSON *mapJson) {
   if (!mapJson)
     return NULL;
 
@@ -17,7 +17,7 @@ TileMap *ParseMapFromJSON(cJSON *mapJson) {
     return NULL;
   }
 
-  TileMap *map = (TileMap *)malloc(sizeof(TileMap));
+  RawTileMap *map = (RawTileMap *)malloc(sizeof(RawTileMap));
   if (!map)
     return NULL;
 
@@ -196,7 +196,7 @@ SimulationState *LoadStateAtTick(const char *filename, int tick) {
 
   // Parse map (static across all ticks)
   cJSON *mapJson = cJSON_GetObjectItem(json, "map");
-  TileMap *map = ParseMapFromJSON(mapJson);
+  RawTileMap *map = ParseMapFromJSON(mapJson);
   if (!map) {
     printf("Error: Failed to parse map from JSON\n");
     cJSON_Delete(json);
@@ -270,7 +270,7 @@ void FreeState(SimulationState *state) {
   }
 }
 
-void FreeMap(TileMap *map) {
+void FreeMap(RawTileMap *map) {
   if (map) {
     if (map->tiles)
       free(map->tiles);
@@ -278,10 +278,10 @@ void FreeMap(TileMap *map) {
   }
 }
 
-TileMap *LoadMap() {
+RawTileMap *LoadMap() {
   SimulationState *state = LoadState();
   if (state) {
-    TileMap *map = (TileMap *)malloc(sizeof(TileMap));
+    RawTileMap *map = (RawTileMap *)malloc(sizeof(RawTileMap));
     if (map) {
       map->width = state->map.width;
       map->height = state->map.height;

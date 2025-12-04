@@ -28,20 +28,21 @@ Color renderer_get_tile_color(TileType tile);
 void renderer_draw_tile(Vector2 screen_pos, float size, Color color);
 bool renderer_is_position_visible(Vector2 screen_pos, float radius);
 void renderer_calculate_visible_tile_range(const Camera2D_RTS *camera,
-                                           const TileMap *map, int *start_x,
+                                           const RawTileMap *map, int *start_x,
                                            int *start_y, int *end_x,
                                            int *end_y);
 
-void renderer_draw_map(const TileMap *map, const Camera2D_RTS *camera);
+void renderer_draw_map(const RawTileMap *map, const Camera2D_RTS *camera);
 void renderer_draw_objects(const Object *objects, int count,
                            const Camera2D_RTS *camera);
 void renderer_draw_units(const Unit *units, int count,
                          const Camera2D_RTS *camera);
 
 // Texture-based rendering
-void renderer_draw_map_textured(const TileMap *map, const Camera2D_RTS *camera);
+void renderer_draw_map_textured(const RawTileMap *map,
+                                const Camera2D_RTS *camera);
 Rectangle renderer_get_tile_source_rect(TileType tile_type, int x, int y,
-                                        const TileMap *map);
+                                        const RawTileMap *map);
 
 // External configuration
 extern TileAtlas g_tile_atlas;

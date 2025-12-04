@@ -114,7 +114,7 @@ bool renderer_is_position_visible(Vector2 screen_pos, float radius) {
 }
 
 void renderer_calculate_visible_tile_range(const Camera2D_RTS *camera,
-                                           const TileMap *map, int *start_x,
+                                           const RawTileMap *map, int *start_x,
                                            int *start_y, int *end_x,
                                            int *end_y) {
   *start_x = (int)fmax(0, floor(camera->viewport.x));
@@ -126,7 +126,7 @@ void renderer_calculate_visible_tile_range(const Camera2D_RTS *camera,
 }
 
 Rectangle renderer_get_tile_source_rect(TileType tile_type, int x, int y,
-                                        const TileMap *map) {
+                                        const RawTileMap *map) {
   // Find the mapping for this tile type
   for (size_t i = 0; i < sizeof(TILE_MAPPINGS) / sizeof(TILE_MAPPINGS[0]);
        i++) {
@@ -158,7 +158,7 @@ Rectangle renderer_get_tile_source_rect(TileType tile_type, int x, int y,
                      g_tile_atlas.tile_width, g_tile_atlas.tile_height};
 }
 
-void renderer_draw_map(const TileMap *map, const Camera2D_RTS *camera) {
+void renderer_draw_map(const RawTileMap *map, const Camera2D_RTS *camera) {
   int start_x, start_y, end_x, end_y;
   renderer_calculate_visible_tile_range(camera, map, &start_x, &start_y, &end_x,
                                         &end_y);
@@ -179,7 +179,7 @@ void renderer_draw_map(const TileMap *map, const Camera2D_RTS *camera) {
   }
 }
 
-void renderer_draw_map_textured(const TileMap *map,
+void renderer_draw_map_textured(const RawTileMap *map,
                                 const Camera2D_RTS *camera) {
   // Check if tile atlas is loaded
   if (g_tile_atlas.texture.id == 0) {
