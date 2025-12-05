@@ -203,7 +203,7 @@ SimulationState *LoadStateAtTick(const char *filename, int tick) {
     free(state);
     return NULL;
   }
-  state->map = *map;
+  state->map = *TransformMap(map);
   free(map);
 
   // Parse state array and get specific tick

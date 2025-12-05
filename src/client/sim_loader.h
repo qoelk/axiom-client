@@ -20,7 +20,7 @@ typedef struct {
 } Unit;
 
 typedef struct {
-  RawTileMap map;
+  TileMap map;
   Object *objects;
   int objectCount;
   Unit *units;

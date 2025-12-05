@@ -6,7 +6,7 @@
 static TileType TILE_MAPPINGS[] = {{.key = TILE_WATER,
                                     .raw_key = R_TILE_WATER,
                                     .variation = 1,
-                                    .atlas_coords = {{1, 1}}},
+                                    .atlas_coords = {1, 1}},
                                    {
                                        .key = TILE_LAND,
                                        .raw_key = R_TILE_LAND,
@@ -31,11 +31,11 @@ static TileType TILE_MAPPINGS[] = {{.key = TILE_WATER,
                                    }};
 
 Tile raw_to_tile(RawTileKey raw_key) {
-  Tile tile = {0};
-  tile.raw_key = raw_key;
-  tile.elevation = 0;
+  Tile tile = {.elevation = 0,
+               .texture_index_x = 0,
+               .texture_index_y = 0,
+               .raw_key = raw_key};
 
-  // Find the corresponding TileType in TILE_MAPPINGS
   for (size_t i = 0; i < 4; i++) {
     if (TILE_MAPPINGS[i].raw_key == raw_key) {
       tile.key = TILE_MAPPINGS[i].key;
@@ -46,10 +46,5 @@ Tile raw_to_tile(RawTileKey raw_key) {
       return tile;
     }
   }
-
-  fprintf(
-      stderr,
-      "Warning: Raw tile key %d not found in TILE_MAPPINGS, using fallback\n",
-      raw_key);
-  return tile;
+  abort();
 }
