@@ -9,11 +9,14 @@ static int rand_initialized = 0;
 TileType TILE_MAPPINGS[] = {{.key = TILE_WATER,
                              .raw_key = R_TILE_WATER,
                              .variation = 1,
-                             .atlas_coords = {{1, 1}}},
+                             .atlas_coords = {{0, 0}}},
                             {.key = TILE_LAND,
                              .raw_key = R_TILE_LAND,
-                             .variation = 2,
-                             .atlas_coords = {{3, 3}, {3, 4}}},
+                             .variation = 1,
+                             .atlas_coords =
+                                 {
+                                     {0, 6},
+                                 }},
                             {.key = TILE_DIRT,
                              .raw_key = R_TILE_DIRT,
                              .variation = 2,
@@ -28,12 +31,6 @@ Tile raw_to_tile(RawTileKey raw_key) {
   tile.raw_key = raw_key;
   tile.elevation = 0;
 
-  // Initialize random seed once
-  if (!rand_initialized) {
-    srand(time(NULL));
-    rand_initialized = 1;
-  }
-
   // Find the corresponding TileType in TILE_MAPPINGS
   for (size_t i = 0; i < sizeof(TILE_MAPPINGS) / sizeof(TILE_MAPPINGS[0]);
        i++) {
@@ -41,18 +38,8 @@ Tile raw_to_tile(RawTileKey raw_key) {
       tile.type = TILE_MAPPINGS[i];
       tile.key = TILE_MAPPINGS[i].key;
 
-      // If there are variations, randomly select one
-      if (TILE_MAPPINGS[i].variation > 0) {
-        int variation_index = rand() % TILE_MAPPINGS[i].variation;
-        tile.texture_index_x =
-            TILE_MAPPINGS[i].atlas_coords[variation_index][0];
-        tile.texture_index_y =
-            TILE_MAPPINGS[i].atlas_coords[variation_index][1];
-      } else {
-        // No variations, use the first (and only) coordinate
-        tile.texture_index_x = TILE_MAPPINGS[i].atlas_coords[0][0];
-        tile.texture_index_y = TILE_MAPPINGS[i].atlas_coords[0][1];
-      }
+      tile.texture_index_x = TILE_MAPPINGS[i].atlas_coords[0][0];
+      tile.texture_index_y = TILE_MAPPINGS[i].atlas_coords[0][1];
 
       return tile;
     }

@@ -4,6 +4,7 @@
 #include "sim_loader.h"
 #include <math.h>
 #include <stddef.h>
+#include <stdio.h>
 
 TileAtlas g_tile_atlas = {0};
 Texture2D g_unit_texture = {0};
@@ -17,8 +18,7 @@ void renderer_init_tile_atlas(const char *texture_path, int tile_width,
   g_tile_atlas.gap = gap;
 
   // Calculate columns and rows based on texture dimensions
-  g_tile_atlas.columns =
-      (g_tile_atlas.texture.width + gap) / (tile_width + gap);
+  g_tile_atlas.columns = g_tile_atlas.texture.width / (tile_width + gap);
   g_tile_atlas.rows = (g_tile_atlas.texture.height + gap) / (tile_height + gap);
 }
 
@@ -57,21 +57,6 @@ void renderer_cleanup_tree_texture(void) {
   }
 }
 
-Color renderer_get_tile_color(RawTileKey tile) {
-  switch (tile) {
-  case R_TILE_WATER:
-    return BLUE;
-  case R_TILE_LAND:
-    return GREEN;
-  case R_TILE_DIRT:
-    return BROWN;
-  case R_TILE_ROCK:
-    return GRAY;
-  default:
-    return BLACK;
-  }
-}
-
 void renderer_draw_tile(Vector2 screen_pos, float size, Color color) {
   DrawRectangle(screen_pos.x - size / 2, screen_pos.y - size / 2, size, size,
                 color);
@@ -97,75 +82,22 @@ void renderer_calculate_visible_tile_range(const Camera2D_RTS *camera,
                      ceil(camera->viewport.y + camera->viewport.height));
 }
 
-Rectangle renderer_get_tile_source_rect_from_type(const TileType *tile_type,
-                                                  int x, int y) {
-  // Safety check
-  if (tile_type == NULL || tile_type->variation <= 0) {
-    TraceLog(LOG_ERROR, "Invalid tile type or no variations");
-    // Fallback to first grass tile
-    return (Rectangle){0, 3 * (g_tile_atlas.tile_height + g_tile_atlas.gap),
-                       g_tile_atlas.tile_width, g_tile_atlas.tile_height};
-  }
-
-  // Use position-based variation for more natural distribution
-  int variation_index = (x + y * 7) % tile_type->variation;
-  int atlas_x = tile_type->atlas_coords[variation_index][0];
-  int atlas_y = tile_type->atlas_coords[variation_index][1];
-
-  // Calculate source rectangle considering gaps
-  int source_x = atlas_x * (g_tile_atlas.tile_width + g_tile_atlas.gap);
-  int source_y = atlas_y * (g_tile_atlas.tile_height + g_tile_atlas.gap);
-
-  return (Rectangle){source_x, source_y, g_tile_atlas.tile_width,
-                     g_tile_atlas.tile_height};
-}
-
 Rectangle renderer_get_tile_source_rect_from_tile(const Tile *tile) {
-  if (tile == NULL) {
-    // Fallback: return first grass tile
-    return (Rectangle){0, 3 * (g_tile_atlas.tile_height + g_tile_atlas.gap),
-                       g_tile_atlas.tile_width, g_tile_atlas.tile_height};
-  }
 
-  // Use the pre-calculated texture indices from the tile
   int atlas_x = tile->texture_index_x;
   int atlas_y = tile->texture_index_y;
 
-  // Calculate source rectangle considering gaps
   int source_x = atlas_x * (g_tile_atlas.tile_width + g_tile_atlas.gap);
   int source_y = atlas_y * (g_tile_atlas.tile_height + g_tile_atlas.gap);
 
   return (Rectangle){source_x, source_y, g_tile_atlas.tile_width,
                      g_tile_atlas.tile_height};
-}
-
-void renderer_draw_map(const TileMap *map, const Camera2D_RTS *camera) {
-  int start_x, start_y, end_x, end_y;
-  renderer_calculate_visible_tile_range(camera, map, &start_x, &start_y, &end_x,
-                                        &end_y);
-
-  for (int y = start_y; y < end_y; y++) {
-    for (int x = start_x; x < end_x; x++) {
-      Tile tile = map->tiles[y * map->width + x];
-      Color color = renderer_get_tile_color(tile.raw_key);
-
-      Vector2 screen_pos =
-          camera_world_to_screen(camera, (Vector2){x + 0.5f, y + 0.5f});
-      float tile_size = TILE_SIZE_PIXELS * camera->zoom;
-
-      if (renderer_is_position_visible(screen_pos, tile_size / 2)) {
-        renderer_draw_tile(screen_pos, tile_size, color);
-      }
-    }
-  }
 }
 
 void renderer_draw_map_textured(const TileMap *map,
                                 const Camera2D_RTS *camera) {
   // Check if tile atlas is loaded
   if (g_tile_atlas.texture.id == 0) {
-    // Fall back to colored rendering
-    renderer_draw_map(map, camera);
     return;
   }
 
@@ -223,7 +155,6 @@ void renderer_draw_objects(const Object *objects, int count,
     if (!renderer_is_position_visible(screen_pos, obj_size / 2))
       continue;
 
-    // Calculate destination rectangle
     // Trees might be taller than wide, so we can adjust proportions if needed
     float width = obj_size;
     float height =
