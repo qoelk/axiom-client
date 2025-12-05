@@ -28,9 +28,9 @@ typedef struct {
 
 // Camera lifecycle management
 void camera_init(Camera2D_RTS *camera, const CameraConfig *config,
-                 const RawTileMap *map);
-void camera_update(Camera2D_RTS *camera, const RawTileMap *map);
-void camera_constrain_to_map(Camera2D_RTS *camera, const RawTileMap *map);
+                 const TileMap *map);
+void camera_update(Camera2D_RTS *camera, const TileMap *map);
+void camera_constrain_to_map(Camera2D_RTS *camera, const TileMap *map);
 
 // Coordinate transformation
 Vector2 camera_world_to_screen(const Camera2D_RTS *camera, Vector2 world_pos);
