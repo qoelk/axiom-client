@@ -297,3 +297,38 @@ RawTileMap *LoadMap() {
   }
   return NULL;
 }
+
+TileMap *TransformMap(RawTileMap *rmap) {
+  if (!rmap || !rmap->tiles) {
+    return NULL;
+  }
+
+  TileMap *tmap = (TileMap *)malloc(sizeof(TileMap));
+  if (!tmap) {
+    return NULL;
+  }
+
+  tmap->width = rmap->width;
+  tmap->height = rmap->height;
+  int totalTiles = tmap->width * tmap->height;
+
+  tmap->tiles = (Tile *)malloc(totalTiles * sizeof(Tile));
+  if (!tmap->tiles) {
+    free(tmap);
+    return NULL;
+  }
+
+  for (int i = 0; i < totalTiles; i++) {
+    Tile *tile = &tmap->tiles[i];
+    RawTileType rawType = rmap->tiles[i];
+
+    // Set raw type
+    tile->raw_type = rawType;
+    tile->elevation = 0;
+    tile->variation = 0;
+    tile->texture_index_y = 0;
+    tile->texture_index_x = 0;
+  }
+
+  return tmap;
+}

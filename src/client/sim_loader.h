@@ -12,6 +12,20 @@ typedef struct {
 } RawTileMap;
 
 typedef struct {
+  RawTileType raw_type;
+  int elevation;
+  int variation;
+  int texture_index_x;
+  int texture_index_y;
+} Tile;
+
+typedef struct {
+  int width;
+  int height;
+  Tile *tiles;
+} TileMap;
+
+typedef struct {
   float x;
   float y;
   float size;
@@ -47,5 +61,6 @@ RawTileMap *LoadMap(void);
 
 // Tick management
 int GetMaxTickFromFile(const char *filename); // New: Get total ticks available
+TileMap *TransformMap(RawTileMap *rmap);
 
 #endif
