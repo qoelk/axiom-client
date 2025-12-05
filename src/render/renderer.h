@@ -24,7 +24,7 @@ void renderer_cleanup_tile_atlas(void);
 
 void renderer_init_tree_texture(const char *texture_path);
 void renderer_cleanup_tree_texture(void);
-Color renderer_get_tile_color(RawTileType tile);
+Color renderer_get_tile_color(RawTileKey tile);
 void renderer_draw_tile(Vector2 screen_pos, float size, Color color);
 bool renderer_is_position_visible(Vector2 screen_pos, float radius);
 void renderer_calculate_visible_tile_range(const Camera2D_RTS *camera,
@@ -40,7 +40,7 @@ void renderer_draw_units(const Unit *units, int count,
 
 // Texture-based rendering
 void renderer_draw_map_textured(const TileMap *map, const Camera2D_RTS *camera);
-Rectangle renderer_get_tile_source_rect(RawTileType tile_type, int x, int y,
+Rectangle renderer_get_tile_source_rect(RawTileKey tile_type, int x, int y,
                                         const TileMap *map);
 
 // External configuration

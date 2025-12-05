@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include "../map/map.h"
 #include "../utils/math_utils.h"
 #include "sim_loader.h"
 #include <math.h>
@@ -7,35 +8,6 @@
 TileAtlas g_tile_atlas = {0};
 Texture2D g_unit_texture = {0};
 Texture2D g_tree_texture = {0};
-
-// Tile type to atlas coordinates mapping (multiple variations per tile type)
-typedef struct {
-  RawTileType tile_type;
-  int variation_count;
-  int atlas_coords[8][2]; // [x,y] pairs for up to 8 variations per tile type
-} TileMapping;
-
-static TileMapping TILE_MAPPINGS[] = {
-    {
-        .tile_type = TILE_WATER,
-        .variation_count = 1,
-        .atlas_coords = {{1, 1}} // Water tile
-    },
-    {
-        .tile_type = TILE_LAND,
-        .variation_count = 2,
-        .atlas_coords = {{3, 3}, {3, 4}} // Grass variations
-    },
-    {
-        .tile_type = TILE_DIRT,
-        .variation_count = 2,
-        .atlas_coords = {{4, 3}, {4, 4}} // Dirt variations - NEEDS UPDATE
-    },
-    {
-        .tile_type = TILE_ROCK,
-        .variation_count = 2,
-        .atlas_coords = {{5, 3}, {5, 4}} // Rock variations - NEEDS UPDATE
-    }};
 
 void renderer_init_tile_atlas(const char *texture_path, int tile_width,
                               int tile_height, int gap) {
@@ -85,15 +57,15 @@ void renderer_cleanup_tree_texture(void) {
   }
 }
 
-Color renderer_get_tile_color(RawTileType tile) {
+Color renderer_get_tile_color(RawTileKey tile) {
   switch (tile) {
-  case TILE_WATER:
+  case R_TILE_WATER:
     return BLUE;
-  case TILE_LAND:
+  case R_TILE_LAND:
     return GREEN;
-  case TILE_DIRT:
+  case R_TILE_DIRT:
     return BROWN;
-  case TILE_ROCK:
+  case R_TILE_ROCK:
     return GRAY;
   default:
     return BLACK;
@@ -125,37 +97,46 @@ void renderer_calculate_visible_tile_range(const Camera2D_RTS *camera,
                      ceil(camera->viewport.y + camera->viewport.height));
 }
 
-Rectangle renderer_get_tile_source_rect(RawTileType tile_type, int x, int y,
-                                        const TileMap *map) {
-  // Find the mapping for this tile type
-  for (size_t i = 0; i < sizeof(TILE_MAPPINGS) / sizeof(TILE_MAPPINGS[0]);
-       i++) {
-    if (TILE_MAPPINGS[i].tile_type == tile_type) {
-      // Safety check
-      if (TILE_MAPPINGS[i].variation_count <= 0) {
-        TraceLog(LOG_ERROR, "No variations for tile type %d", tile_type);
-        // Fallback to first grass tile
-        return (Rectangle){0, 3 * (g_tile_atlas.tile_height + g_tile_atlas.gap),
-                           g_tile_atlas.tile_width, g_tile_atlas.tile_height};
-      }
-
-      // Use position-based variation for more natural distribution
-      int variation_index = (x + y * 7) % TILE_MAPPINGS[i].variation_count;
-      int atlas_x = TILE_MAPPINGS[i].atlas_coords[variation_index][0];
-      int atlas_y = TILE_MAPPINGS[i].atlas_coords[variation_index][1];
-
-      // Calculate source rectangle considering gaps
-      int source_x = atlas_x * (g_tile_atlas.tile_width + g_tile_atlas.gap);
-      int source_y = atlas_y * (g_tile_atlas.tile_height + g_tile_atlas.gap);
-
-      return (Rectangle){source_x, source_y, g_tile_atlas.tile_width,
-                         g_tile_atlas.tile_height};
-    }
+Rectangle renderer_get_tile_source_rect_from_type(const TileType *tile_type,
+                                                  int x, int y) {
+  // Safety check
+  if (tile_type == NULL || tile_type->variation <= 0) {
+    TraceLog(LOG_ERROR, "Invalid tile type or no variations");
+    // Fallback to first grass tile
+    return (Rectangle){0, 3 * (g_tile_atlas.tile_height + g_tile_atlas.gap),
+                       g_tile_atlas.tile_width, g_tile_atlas.tile_height};
   }
 
-  // Fallback: return first grass tile
-  return (Rectangle){0, 3 * (g_tile_atlas.tile_height + g_tile_atlas.gap),
-                     g_tile_atlas.tile_width, g_tile_atlas.tile_height};
+  // Use position-based variation for more natural distribution
+  int variation_index = (x + y * 7) % tile_type->variation;
+  int atlas_x = tile_type->atlas_coords[variation_index][0];
+  int atlas_y = tile_type->atlas_coords[variation_index][1];
+
+  // Calculate source rectangle considering gaps
+  int source_x = atlas_x * (g_tile_atlas.tile_width + g_tile_atlas.gap);
+  int source_y = atlas_y * (g_tile_atlas.tile_height + g_tile_atlas.gap);
+
+  return (Rectangle){source_x, source_y, g_tile_atlas.tile_width,
+                     g_tile_atlas.tile_height};
+}
+
+Rectangle renderer_get_tile_source_rect_from_tile(const Tile *tile) {
+  if (tile == NULL) {
+    // Fallback: return first grass tile
+    return (Rectangle){0, 3 * (g_tile_atlas.tile_height + g_tile_atlas.gap),
+                       g_tile_atlas.tile_width, g_tile_atlas.tile_height};
+  }
+
+  // Use the pre-calculated texture indices from the tile
+  int atlas_x = tile->texture_index_x;
+  int atlas_y = tile->texture_index_y;
+
+  // Calculate source rectangle considering gaps
+  int source_x = atlas_x * (g_tile_atlas.tile_width + g_tile_atlas.gap);
+  int source_y = atlas_y * (g_tile_atlas.tile_height + g_tile_atlas.gap);
+
+  return (Rectangle){source_x, source_y, g_tile_atlas.tile_width,
+                     g_tile_atlas.tile_height};
 }
 
 void renderer_draw_map(const TileMap *map, const Camera2D_RTS *camera) {
@@ -166,7 +147,7 @@ void renderer_draw_map(const TileMap *map, const Camera2D_RTS *camera) {
   for (int y = start_y; y < end_y; y++) {
     for (int x = start_x; x < end_x; x++) {
       Tile tile = map->tiles[y * map->width + x];
-      Color color = renderer_get_tile_color(tile.raw_type);
+      Color color = renderer_get_tile_color(tile.raw_key);
 
       Vector2 screen_pos =
           camera_world_to_screen(camera, (Vector2){x + 0.5f, y + 0.5f});
@@ -194,8 +175,8 @@ void renderer_draw_map_textured(const TileMap *map,
 
   for (int y = start_y; y < end_y; y++) {
     for (int x = start_x; x < end_x; x++) {
-      RawTileType tile = map->tiles[y * map->width + x].raw_type;
-      Rectangle source_rect = renderer_get_tile_source_rect(tile, x, y, map);
+      Tile *tile = &map->tiles[y * map->width + x];
+      Rectangle source_rect = renderer_get_tile_source_rect_from_tile(tile);
 
       Vector2 screen_pos =
           camera_world_to_screen(camera, (Vector2){x + 0.5f, y + 0.5f});

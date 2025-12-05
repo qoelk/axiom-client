@@ -1,29 +1,8 @@
 #ifndef SIM_LOADER_H
 #define SIM_LOADER_H
 
+#include "../map/map.h"
 #include <stdbool.h>
-
-typedef enum { TILE_WATER, TILE_LAND, TILE_DIRT, TILE_ROCK } RawTileType;
-
-typedef struct {
-  int width;
-  int height;
-  RawTileType *tiles;
-} RawTileMap;
-
-typedef struct {
-  RawTileType raw_type;
-  int elevation;
-  int variation;
-  int texture_index_x;
-  int texture_index_y;
-} Tile;
-
-typedef struct {
-  int width;
-  int height;
-  Tile *tiles;
-} TileMap;
 
 typedef struct {
   float x;

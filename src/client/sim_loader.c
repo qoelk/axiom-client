@@ -25,7 +25,7 @@ RawTileMap *ParseMapFromJSON(cJSON *mapJson) {
   map->height = heightJson->valueint;
 
   int totalTiles = map->width * map->height;
-  map->tiles = (RawTileType *)malloc(totalTiles * sizeof(RawTileType));
+  map->tiles = (RawTileKey *)malloc(totalTiles * sizeof(RawTileKey));
   if (!map->tiles) {
     free(map);
     return NULL;
@@ -36,7 +36,7 @@ RawTileMap *ParseMapFromJSON(cJSON *mapJson) {
   int i = 0;
   cJSON_ArrayForEach(tileItem, tilesJson) {
     if (i < totalTiles) {
-      map->tiles[i] = (RawTileType)tileItem->valueint;
+      map->tiles[i] = (RawTileKey)tileItem->valueint;
       i++;
     }
   }
@@ -286,10 +286,10 @@ RawTileMap *LoadMap() {
       map->width = state->map.width;
       map->height = state->map.height;
       map->tiles =
-          (RawTileType *)malloc(map->width * map->height * sizeof(RawTileType));
+          (RawTileKey *)malloc(map->width * map->height * sizeof(RawTileKey));
       if (map->tiles) {
         memcpy(map->tiles, state->map.tiles,
-               map->width * map->height * sizeof(RawTileType));
+               map->width * map->height * sizeof(RawTileKey));
       }
     }
     FreeState(state);
@@ -319,15 +319,9 @@ TileMap *TransformMap(RawTileMap *rmap) {
   }
 
   for (int i = 0; i < totalTiles; i++) {
-    Tile *tile = &tmap->tiles[i];
-    RawTileType rawType = rmap->tiles[i];
+    RawTileKey rawType = rmap->tiles[i];
 
-    // Set raw type
-    tile->raw_type = rawType;
-    tile->elevation = 0;
-    tile->variation = 0;
-    tile->texture_index_y = 0;
-    tile->texture_index_x = 0;
+    tmap->tiles[i] = raw_to_tile(rawType);
   }
 
   return tmap;
