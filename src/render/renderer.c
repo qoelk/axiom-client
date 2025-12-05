@@ -119,26 +119,6 @@ void renderer_draw_map_textured(const TileMap *map,
                                tile_size};
         DrawTexturePro(g_tile_atlas.texture, source_rect, dest_rect,
                        (Vector2){0, 0}, 0.0f, WHITE);
-
-        // DEBUG: Draw atlas coordinates
-        char coords[16];
-        snprintf(coords, sizeof(coords), "%d,%d", tile->texture_index_x,
-                 tile->texture_index_y);
-
-        float font_size = tile_size * 0.15f;
-        Vector2 text_pos = {
-            screen_pos.x -
-                MeasureTextEx(GetFontDefault(), coords, font_size, 1.0f).x / 2,
-            screen_pos.y - font_size / 2};
-
-        // Background for readability
-        Vector2 text_size =
-            MeasureTextEx(GetFontDefault(), coords, font_size, 1.0f);
-        DrawRectangle(text_pos.x - 2, text_pos.y - 1, text_size.x + 4,
-                      text_size.y + 2, (Color){0, 0, 0, 180});
-
-        // Text
-        DrawTextEx(GetFontDefault(), coords, text_pos, font_size, 1.0f, WHITE);
       }
     }
   }

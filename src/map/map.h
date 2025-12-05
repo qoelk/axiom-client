@@ -4,11 +4,13 @@
 typedef enum { R_TILE_WATER, R_TILE_LAND, R_TILE_DIRT, R_TILE_ROCK } RawTileKey;
 
 typedef enum {
+  // Basic terrain tiles
   TILE_WATER,
   TILE_LAND,
   TILE_DIRT,
   TILE_ROCK,
 
+  // Water-to-land transition tiles (water center with land edges)
   TILE_WATER_LAND_TL,
   TILE_WATER_LAND_ML,
   TILE_WATER_LAND_BL,
@@ -18,8 +20,17 @@ typedef enum {
   TILE_WATER_LAND_MR,
   TILE_WATER_LAND_BR,
 
-} TileKey;
+  // Land-to-water transition tiles (land center with water edges)
+  TILE_LAND_WATER_TL,
+  TILE_LAND_WATER_ML,
+  TILE_LAND_WATER_BL,
+  TILE_LAND_WATER_TM,
+  TILE_LAND_WATER_BM,
+  TILE_LAND_WATER_TR,
+  TILE_LAND_WATER_MR,
+  TILE_LAND_WATER_BR,
 
+} TileKey;
 typedef struct {
   int width;
   int height;
