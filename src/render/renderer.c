@@ -96,10 +96,8 @@ Rectangle renderer_get_tile_source_rect_from_tile(const Tile *tile) {
 
 void renderer_draw_map_textured(const TileMap *map,
                                 const Camera2D_RTS *camera) {
-  // Check if tile atlas is loaded
-  if (g_tile_atlas.texture.id == 0) {
+  if (g_tile_atlas.texture.id == 0)
     return;
-  }
 
   int start_x, start_y, end_x, end_y;
   renderer_calculate_visible_tile_range(camera, map, &start_x, &start_y, &end_x,
@@ -121,11 +119,30 @@ void renderer_draw_map_textured(const TileMap *map,
                                tile_size};
         DrawTexturePro(g_tile_atlas.texture, source_rect, dest_rect,
                        (Vector2){0, 0}, 0.0f, WHITE);
+
+        // DEBUG: Draw atlas coordinates
+        char coords[16];
+        snprintf(coords, sizeof(coords), "%d,%d", tile->texture_index_x,
+                 tile->texture_index_y);
+
+        float font_size = tile_size * 0.15f;
+        Vector2 text_pos = {
+            screen_pos.x -
+                MeasureTextEx(GetFontDefault(), coords, font_size, 1.0f).x / 2,
+            screen_pos.y - font_size / 2};
+
+        // Background for readability
+        Vector2 text_size =
+            MeasureTextEx(GetFontDefault(), coords, font_size, 1.0f);
+        DrawRectangle(text_pos.x - 2, text_pos.y - 1, text_size.x + 4,
+                      text_size.y + 2, (Color){0, 0, 0, 180});
+
+        // Text
+        DrawTextEx(GetFontDefault(), coords, text_pos, font_size, 1.0f, WHITE);
       }
     }
   }
 }
-
 void renderer_draw_objects(const Object *objects, int count,
                            const Camera2D_RTS *camera) {
   // Check if tree texture is loaded

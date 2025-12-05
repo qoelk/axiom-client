@@ -62,7 +62,7 @@ void ui_draw_minimap(const SimulationState *sim, const Camera2D_RTS *camera,
   for (int y_pos = 0; y_pos < sim->map.height; y_pos++) {
     for (int x_pos = 0; x_pos < sim->map.width; x_pos++) {
       RawTileKey tile = sim->map.tiles[y_pos * sim->map.width + x_pos];
-      Color color = renderer_get_tile_color(tile);
+      Color color = UI_BORDER_COLOR;
       color.a = (unsigned char)(255 * 0.7f);
 
       int pixel_x = x + (int)(x_pos * scale_x);

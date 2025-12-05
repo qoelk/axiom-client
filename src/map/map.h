@@ -30,13 +30,12 @@ typedef struct {
   RawTileKey raw_key;
   TileKey key;
   int variation;
-  int atlas_coords[8][2];
+  int atlas_coords[2];
 } TileType;
 
 typedef struct {
   RawTileKey raw_key;
   TileKey key;
-  TileType type;
   int elevation;
   int texture_index_x;
   int texture_index_y;
@@ -47,8 +46,6 @@ typedef struct {
   int height;
   Tile *tiles;
 } TileMap;
-
-extern TileType TILE_MAPPINGS[];
 
 Tile raw_to_tile(RawTileKey raw_key);
 #endif
