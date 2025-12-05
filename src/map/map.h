@@ -9,6 +9,7 @@ typedef enum {
   TILE_LAND,
   TILE_DIRT,
   TILE_ROCK,
+  TILE_UNKNOWN,
 
   // Water-to-land transition tiles (water center with land edges)
   TILE_WATER_LAND_TL,
@@ -59,4 +60,6 @@ typedef struct {
 } TileMap;
 
 Tile raw_to_tile(RawTileKey raw_key);
+void update_coordinates(Tile *tile);
+TileKey get_neighbor_at_offset(TileMap *map, int x, int y, int dx, int dy);
 #endif

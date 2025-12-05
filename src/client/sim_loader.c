@@ -1,4 +1,5 @@
 #include "sim_loader.h"
+#include "map.h"
 #include <cjson/cJSON.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -318,10 +319,106 @@ TileMap *TransformMap(RawTileMap *rmap) {
     return NULL;
   }
 
+  // First pass: create basic tile map using raw_to_tile
   for (int i = 0; i < totalTiles; i++) {
-    RawTileKey rawType = rmap->tiles[i];
+    tmap->tiles[i] = raw_to_tile(rmap->tiles[i]);
+  }
 
-    tmap->tiles[i] = raw_to_tile(rawType);
+  // Second pass: determine water-to-land transitions
+  for (int y = 0; y < tmap->height; y++) {
+    for (int x = 0; x < tmap->width; x++) {
+      int idx = y * tmap->width + x;
+
+      if (tmap->tiles[idx].raw_key == R_TILE_WATER) {
+        // Check all 8 neighboring positions
+        TileKey neighbors[8];
+        int neighbor_count = 0;
+
+        // Get all valid neighbor keys
+        for (int dy = -1; dy <= 1; dy++) {
+          for (int dx = -1; dx <= 1; dx++) {
+            if (dx == 0 && dy == 0)
+              continue; // Skip self
+
+            TileKey neighbor = get_neighbor_at_offset(tmap, x, y, dx, dy);
+            if (neighbor != TILE_UNKNOWN) {
+              neighbors[neighbor_count++] = neighbor;
+            }
+          }
+        }
+
+        // Check if any neighbor is land (or land-to-water transition)
+        bool has_land_neighbor = false;
+        for (int i = 0; i < neighbor_count; i++) {
+          if (neighbors[i] == TILE_LAND || neighbors[i] == TILE_DIRT ||
+              neighbors[i] == TILE_ROCK || neighbors[i] == TILE_LAND_WATER_TL ||
+              neighbors[i] == TILE_LAND_WATER_ML ||
+              neighbors[i] == TILE_LAND_WATER_BL ||
+              neighbors[i] == TILE_LAND_WATER_TM ||
+              neighbors[i] == TILE_LAND_WATER_BM ||
+              neighbors[i] == TILE_LAND_WATER_TR ||
+              neighbors[i] == TILE_LAND_WATER_MR ||
+              neighbors[i] == TILE_LAND_WATER_BR) {
+            has_land_neighbor = true;
+            break;
+          }
+        }
+
+        // If water has land neighbors, determine which transition tile to use
+        if (has_land_neighbor) {
+          // Get specific neighbor positions
+          bool top =
+              get_neighbor_at_offset(tmap, x, y, 0, -1) != TILE_UNKNOWN &&
+              (get_neighbor_at_offset(tmap, x, y, 0, -1) == TILE_LAND ||
+               get_neighbor_at_offset(tmap, x, y, 0, -1) == TILE_DIRT ||
+               get_neighbor_at_offset(tmap, x, y, 0, -1) == TILE_ROCK);
+
+          bool bottom =
+              get_neighbor_at_offset(tmap, x, y, 0, 1) != TILE_UNKNOWN &&
+              (get_neighbor_at_offset(tmap, x, y, 0, 1) == TILE_LAND ||
+               get_neighbor_at_offset(tmap, x, y, 0, 1) == TILE_DIRT ||
+               get_neighbor_at_offset(tmap, x, y, 0, 1) == TILE_ROCK);
+
+          bool left =
+              get_neighbor_at_offset(tmap, x, y, -1, 0) != TILE_UNKNOWN &&
+              (get_neighbor_at_offset(tmap, x, y, -1, 0) == TILE_LAND ||
+               get_neighbor_at_offset(tmap, x, y, -1, 0) == TILE_DIRT ||
+               get_neighbor_at_offset(tmap, x, y, -1, 0) == TILE_ROCK);
+
+          bool right =
+              get_neighbor_at_offset(tmap, x, y, 1, 0) != TILE_UNKNOWN &&
+              (get_neighbor_at_offset(tmap, x, y, 1, 0) == TILE_LAND ||
+               get_neighbor_at_offset(tmap, x, y, 1, 0) == TILE_DIRT ||
+               get_neighbor_at_offset(tmap, x, y, 1, 0) == TILE_ROCK);
+
+          // Simple transition determination (you can make this more
+          // sophisticated)
+          if (top && !bottom && !left && !right) {
+            tmap->tiles[idx].key = TILE_WATER_LAND_TM;
+          } else if (bottom && !top && !left && !right) {
+            tmap->tiles[idx].key = TILE_WATER_LAND_BM;
+          } else if (left && !top && !bottom && !right) {
+            tmap->tiles[idx].key = TILE_WATER_LAND_ML;
+          } else if (right && !top && !bottom && !left) {
+            tmap->tiles[idx].key = TILE_WATER_LAND_MR;
+          } else if (top && left && !bottom && !right) {
+            tmap->tiles[idx].key = TILE_WATER_LAND_TL;
+          } else if (top && right && !bottom && !left) {
+            tmap->tiles[idx].key = TILE_WATER_LAND_TR;
+          } else if (bottom && left && !top && !right) {
+            tmap->tiles[idx].key = TILE_WATER_LAND_BL;
+          } else if (bottom && right && !top && !left) {
+            tmap->tiles[idx].key = TILE_WATER_LAND_BR;
+          } else {
+            // Multiple neighbors - default to something
+            tmap->tiles[idx].key = TILE_WATER_LAND_TM;
+          }
+
+          // Update texture coordinates
+          update_coordinates(&tmap->tiles[idx]);
+        }
+      }
+    }
   }
 
   return tmap;

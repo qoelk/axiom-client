@@ -26,35 +26,35 @@ static TileType TILE_MAPPINGS[] = {
     {.key = TILE_WATER_LAND_TL,
      .raw_key = R_TILE_WATER,
      .variation = 1,
-     .atlas_coords = {0, 1}}, // Top-left corner (water with land in TL)
+     .atlas_coords = {2, 0}}, // Top-left corner (water with land in TL)
     {.key = TILE_WATER_LAND_ML,
      .raw_key = R_TILE_WATER,
      .variation = 1,
-     .atlas_coords = {0, 2}}, // Middle-left side (water with land on left)
+     .atlas_coords = {2, 1}}, // Middle-left side (water with land on left)
     {.key = TILE_WATER_LAND_BL,
      .raw_key = R_TILE_WATER,
      .variation = 1,
-     .atlas_coords = {0, 3}}, // Bottom-left corner (water with land in BL)
+     .atlas_coords = {2, 2}}, // Bottom-left corner (water with land in BL)
     {.key = TILE_WATER_LAND_TM,
      .raw_key = R_TILE_WATER,
      .variation = 1,
-     .atlas_coords = {1, 1}}, // Top-middle side (water with land on top)
+     .atlas_coords = {3, 0}}, // Top-middle side (water with land on top)
     {.key = TILE_WATER_LAND_BM,
      .raw_key = R_TILE_WATER,
      .variation = 1,
-     .atlas_coords = {1, 3}}, // Bottom-middle side (water with land on bottom)
+     .atlas_coords = {3, 2}}, // Bottom-middle side (water with land on bottom)
     {.key = TILE_WATER_LAND_TR,
      .raw_key = R_TILE_WATER,
      .variation = 1,
-     .atlas_coords = {2, 1}}, // Top-right corner (water with land in TR)
+     .atlas_coords = {4, 0}}, // Top-right corner (water with land in TR)
     {.key = TILE_WATER_LAND_MR,
      .raw_key = R_TILE_WATER,
      .variation = 1,
-     .atlas_coords = {2, 2}}, // Middle-right side (water with land on right)
+     .atlas_coords = {4, 1}}, // Middle-right side (water with land on right)
     {.key = TILE_WATER_LAND_BR,
      .raw_key = R_TILE_WATER,
      .variation = 1,
-     .atlas_coords = {2, 3}}, // Bottom-right corner (water with land in BR)
+     .atlas_coords = {4, 2}}, // Bottom-right corner (water with land in BR)
 
     // Land-to-water transition tiles (land center with water edges)
     {.key = TILE_LAND_WATER_TL,
@@ -107,4 +107,30 @@ Tile raw_to_tile(RawTileKey raw_key) {
     }
   }
   abort();
+}
+
+void update_coordinates(Tile *tile) {
+  // Look up the tile in TILE_MAPPINGS to get its texture coordinates
+  for (size_t i = 0; i < sizeof(TILE_MAPPINGS) / sizeof(TILE_MAPPINGS[0]);
+       i++) {
+    if (TILE_MAPPINGS[i].key == tile->key) {
+      tile->texture_index_x = TILE_MAPPINGS[i].atlas_coords[0];
+      tile->texture_index_y = TILE_MAPPINGS[i].atlas_coords[1];
+      return;
+    }
+  }
+  abort();
+}
+
+TileKey get_neighbor_at_offset(TileMap *map, int x, int y, int dx, int dy) {
+  int nx = x + dx;
+  int ny = y + dy;
+
+  // Check bounds
+  if (nx < 0 || nx >= map->width || ny < 0 || ny >= map->height) {
+    return TILE_UNKNOWN;
+  }
+
+  int idx = ny * map->width + nx;
+  return map->tiles[idx].key;
 }
