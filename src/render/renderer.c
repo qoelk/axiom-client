@@ -202,7 +202,7 @@ void renderer_draw_units(const Unit *units, int count,
     return;
   }
 
-  // Use texture for units
+  // Use texture for units - maintain aspect ratio
   for (int i = 0; i < count; i++) {
     Unit unit = units[i];
     Vector2 screen_pos =
@@ -212,21 +212,33 @@ void renderer_draw_units(const Unit *units, int count,
     if (!renderer_is_position_visible(screen_pos, unit_size / 2))
       continue;
 
-    // Calculate destination rectangle
-    Rectangle dest_rect = {screen_pos.x - unit_size / 2,
-                           screen_pos.y - unit_size / 2, unit_size, unit_size};
+    // Calculate destination rectangle while maintaining aspect ratio
+    float aspect_ratio =
+        (float)g_unit_texture.width / (float)g_unit_texture.height;
+    float draw_width, draw_height;
 
-    // Set color based on owner (tint the texture)
-    Color tint = (unit.owner == 1) ? RED : YELLOW;
+    if (aspect_ratio > 1.0f) {
+      // Texture is wider than tall
+      draw_width = unit_size;
+      draw_height = unit_size / aspect_ratio;
+    } else {
+      // Texture is taller than wide or square
+      draw_width = unit_size * aspect_ratio;
+      draw_height = unit_size;
+    }
+
+    Rectangle dest_rect = {screen_pos.x - draw_width / 2,
+                           screen_pos.y - draw_height / 2, draw_width,
+                           draw_height};
 
     // Rotate based on facing direction
     float rotation = unit.facing;
 
-    // Draw the unit texture
     DrawTexturePro(
         g_unit_texture,
         (Rectangle){0, 0, g_unit_texture.width, g_unit_texture.height},
-        dest_rect, (Vector2){unit_size / 2, unit_size / 2}, // rotation center
-        rotation, tint);
+        dest_rect,
+        (Vector2){draw_width / 2, draw_height / 2}, // rotation center
+        rotation, WHITE);
   }
 }
