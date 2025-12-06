@@ -159,7 +159,7 @@ void preprocess_map(TileMap *map) {
       }
 
       // Top-right corner (only if no previous corner was set)
-      if (is_tr_land && key == tile.key) {
+      if (is_tr_land) {
         key = (is_t_land && is_r_land) ? TILE_WATER_LAND_TR_R_T
                                        : TILE_WATER_LAND_TR;
       }
@@ -175,7 +175,7 @@ void preprocess_map(TileMap *map) {
       }
 
       // Bottom-left corner (only if no previous corner was set)
-      if (is_bl_land && key == tile.key) {
+      if (is_bl_land) {
         key = (is_b_land && is_l_land) ? TILE_WATER_LAND_BL_L_B
                                        : TILE_WATER_LAND_BL;
       }
@@ -186,7 +186,7 @@ void preprocess_map(TileMap *map) {
       }
 
       // Bottom-right corner (only if no previous corner was set)
-      if (is_br_land && key == tile.key) {
+      if (is_br_land) {
         key = (is_b_land && is_r_land) ? TILE_WATER_LAND_BR_R_B
                                        : TILE_WATER_LAND_BR;
       }
