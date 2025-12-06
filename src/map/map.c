@@ -146,63 +146,53 @@ void preprocess_map(TileMap *map) {
 
       TileKey key = TILE_WATER;
 
-      // Check for corners with special logic:
-      // A true corner tile has land diagonally AND at least one adjacent
-      // orthogonal side is water
+      if (is_tl_land) {
+        key = TILE_WATER_LAND_TL;
+      }
 
-      // Top-left corner: land at TL AND (NOT both T and L are land)
-      if (is_tl_land && !(is_t_land && is_l_land)) {
-        // If both adjacent sides are water, it's an outer corner
-        // If one adjacent side is land, it's an inner corner
-        if (is_t_land) {
-          key = TILE_WATER_LAND_TL_L_T; // Both TL and T are land
-        } else if (is_l_land) {
-          key = TILE_WATER_LAND_TL_L_T; // Both TL and L are land (same tile)
-        } else {
-          key = TILE_WATER_LAND_TL; // Just TL is land (outer corner)
-        }
+      if (is_tr_land) {
+        key = TILE_WATER_LAND_TR;
       }
-      // Top-right corner
-      else if (is_tr_land && !(is_t_land && is_r_land)) {
-        if (is_t_land) {
-          key = TILE_WATER_LAND_TR_R_T;
-        } else if (is_r_land) {
-          key = TILE_WATER_LAND_TR_R_T;
-        } else {
-          key = TILE_WATER_LAND_TR;
-        }
+
+      if (is_bl_land) {
+        key = TILE_WATER_LAND_BL;
       }
-      // Bottom-left corner
-      else if (is_bl_land && !(is_b_land && is_l_land)) {
-        if (is_b_land) {
-          key = TILE_WATER_LAND_BL_L_B;
-        } else if (is_l_land) {
-          key = TILE_WATER_LAND_BL_L_B;
-        } else {
-          key = TILE_WATER_LAND_BL;
-        }
+
+      if (is_br_land) {
+        key = TILE_WATER_LAND_BR;
       }
-      // Bottom-right corner
-      else if (is_br_land && !(is_b_land && is_r_land)) {
-        if (is_b_land) {
-          key = TILE_WATER_LAND_BR_R_B;
-        } else if (is_r_land) {
-          key = TILE_WATER_LAND_BR_R_B;
-        } else {
-          key = TILE_WATER_LAND_BR;
-        }
-      }
-      // Check for edges (only if no corner was applied)
-      else if (is_t_land) {
+
+      if (is_t_land) {
         key = TILE_WATER_LAND_T;
-      } else if (is_b_land) {
+      }
+
+      if (is_b_land) {
         key = TILE_WATER_LAND_B;
-      } else if (is_l_land) {
+      }
+
+      if (is_l_land) {
         key = TILE_WATER_LAND_L;
-      } else if (is_r_land) {
+      }
+
+      if (is_r_land) {
         key = TILE_WATER_LAND_R;
       }
 
+      if (is_t_land && is_tl_land && is_l_land) {
+        key = TILE_WATER_LAND_TL_L_T;
+      }
+
+      if (is_t_land && is_tr_land && is_r_land) {
+        key = TILE_WATER_LAND_TR_R_T;
+      }
+
+      if (is_b_land && is_bl_land && is_l_land) {
+        key = TILE_WATER_LAND_BL_L_B;
+      }
+
+      if (is_b_land && is_br_land && is_r_land) {
+        key = TILE_WATER_LAND_BR_R_B;
+      }
       map->tiles[y * map->width + x].key = key;
       update_coordinates(&map->tiles[y * map->width + x]);
     }
