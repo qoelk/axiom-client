@@ -12,24 +12,18 @@ typedef enum {
   TILE_UNKNOWN,
 
   // Water-to-land transition tiles (water center with land edges)
+  TILE_WATER_LAND_TL_L_T,
   TILE_WATER_LAND_TL,
-  TILE_WATER_LAND_ML,
+  TILE_WATER_LAND_L,
+  TILE_WATER_LAND_BL_L_B,
   TILE_WATER_LAND_BL,
-  TILE_WATER_LAND_TM,
-  TILE_WATER_LAND_BM,
+  TILE_WATER_LAND_T,
+  TILE_WATER_LAND_B,
+  TILE_WATER_LAND_TR_R_T,
   TILE_WATER_LAND_TR,
-  TILE_WATER_LAND_MR,
+  TILE_WATER_LAND_R,
+  TILE_WATER_LAND_BR_R_B,
   TILE_WATER_LAND_BR,
-
-  // Land-to-water transition tiles (land center with water edges)
-  TILE_LAND_WATER_TL,
-  TILE_LAND_WATER_ML,
-  TILE_LAND_WATER_BL,
-  TILE_LAND_WATER_TM,
-  TILE_LAND_WATER_BM,
-  TILE_LAND_WATER_TR,
-  TILE_LAND_WATER_MR,
-  TILE_LAND_WATER_BR,
 
 } TileKey;
 typedef struct {
@@ -62,4 +56,5 @@ typedef struct {
 Tile raw_to_tile(RawTileKey raw_key);
 void update_coordinates(Tile *tile);
 TileKey get_neighbor_at_offset(TileMap *map, int x, int y, int dx, int dy);
+void preprocess_map(TileMap *map);
 #endif
